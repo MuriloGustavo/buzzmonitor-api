@@ -24,7 +24,13 @@ public class StoryController {
         return storyService.findAll();
     }
 	
-	@GetMapping("/{user}")
+	@GetMapping("/id/{post_id}")
+	public Story findById(@PathVariable String post_id) throws Exception {
+		
+		return storyService.findById(post_id);
+	}
+	
+	@GetMapping("/user/{user}")
 	public List<Story> findByUser(@PathVariable String user) throws Exception {
 		
 		return storyService.findByUser(user);

@@ -24,10 +24,22 @@ public class TweetController {
         return tweetService.findAll();
     }
 	
-	@GetMapping("/{user}")
+	@GetMapping("/id/{post_id}")
+	public Tweet findById(@PathVariable String post_id) throws Exception {
+		
+		return tweetService.findById(post_id);
+	}
+	
+	@GetMapping("/user/{user}")
 	public List<Tweet> findByUser(@PathVariable String user) throws Exception {
 		
 		return tweetService.findByUser(user);
 	}
+	
+	@GetMapping("/content/{content}")
+    public List<Tweet> findByContent(@PathVariable String content) throws Exception {
+
+        return tweetService.findByContent(content);
+    }
 
 }

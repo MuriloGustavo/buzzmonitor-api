@@ -47,6 +47,21 @@ public class StoryService {
         return getSearchResult(searchResponse);    
     }
 	
+	public Story findById(String post_id) throws Exception {
+		SearchRequest searchRequest = buildSearchRequest(INDEX,TYPE);
+		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+	     
+		MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("post_id", post_id);
+	     
+	    searchSourceBuilder.query(matchQueryBuilder);
+
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getResult(searchResponse);
+	}
+	
 	public List<Story> findByUser(String user) throws Exception {
 		SearchRequest searchRequest = buildSearchRequest(INDEX,TYPE);
 		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -60,6 +75,18 @@ public class StoryService {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse);
+	}
+	
+	private Story getResult(SearchResponse searchResponse) {
+		SearchHit[] searchHit = searchResponse.getHits().getHits();
+		
+		List<Story> storys = new ArrayList<>();
+		
+		for (SearchHit hit : searchHit){
+			storys.add(objectMapper.convertValue(hit.getSourceAsMap(), Story.class));
+		}
+		
+		return storys.get(0);
 	}
 	
 	public List<Story> getSearchResult(SearchResponse searchResponse) {

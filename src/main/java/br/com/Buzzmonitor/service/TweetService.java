@@ -8,6 +8,8 @@ import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.ScoreSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,12 +39,28 @@ public class TweetService {
         SearchRequest searchRequest = buildSearchRequest(INDEX,TYPE);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchSourceBuilder.sort(new ScoreSortBuilder().order(SortOrder.DESC));
         searchRequest.source(searchSourceBuilder);
         
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         
         return getSearchResult(searchResponse);    
     }
+	
+	public Tweet findById(String post_id) throws Exception {
+		SearchRequest searchRequest = buildSearchRequest(INDEX,TYPE);
+		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+	     
+		MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("post_id", post_id);
+	     
+	    searchSourceBuilder.query(matchQueryBuilder);
+
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getResult(searchResponse);
+	}
 	
 	public List<Tweet> findByUser(String user) throws Exception {
 		SearchRequest searchRequest = buildSearchRequest(INDEX,TYPE);
@@ -57,6 +75,33 @@ public class TweetService {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse);
+	}
+	
+	public List<Tweet> findByContent(String content) throws Exception {
+		SearchRequest searchRequest = buildSearchRequest(INDEX,TYPE);
+		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+	     
+		MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("content", content);
+	     
+	    searchSourceBuilder.query(matchQueryBuilder);
+
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getSearchResult(searchResponse);
+	}
+	
+	private Tweet getResult(SearchResponse searchResponse) {
+		SearchHit[] searchHit = searchResponse.getHits().getHits();
+		
+		List<Tweet> tweets = new ArrayList<>();
+		
+		for (SearchHit hit : searchHit){
+			tweets.add(objectMapper.convertValue(hit.getSourceAsMap(), Tweet.class));
+		}
+		
+		return tweets.get(0);
 	}
 	
 	private List<Tweet> getSearchResult(SearchResponse searchResponse) {
